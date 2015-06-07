@@ -95,40 +95,60 @@ public static void PrintResult (String[][] results) {
 	
 	// Print Formatting based on number of columns
 	if (num_columns == 1){
+		System.out.print("..............................");
 		for (Object[] row : results) {
 			System.out.format("%-30s\n", row);
 		}
 	}
 	else if (num_columns == 2){
+		for( int i = 0; i < num_columns; i++)
+			System.out.print("..............................");
+		System.out.println();
 		for (Object[] row : results) {
 			System.out.format("%-30s%-30s\n", row);
 		}
 	}
 	else if (num_columns == 3){
+		for( int i = 0; i < num_columns; i++)
+			System.out.print("..............................");
+		System.out.println();
 		for (Object[] row : results) {
 			System.out.format("%-30s%-30s%-30s\n", row);
 		}
 	}
 	else if (num_columns == 4){
+		for( int i = 0; i < num_columns; i++)
+			System.out.print("..............................");
+		System.out.println();
 		for (Object[] row : results) {
 			System.out.format("%-30s%-30s%-30s%-30s\n", row);
 		}
 	}
 	else if (num_columns == 5){
+		for( int i = 0; i < num_columns; i++)
+			System.out.print("..............................");
+		System.out.println();
 		for (Object[] row : results) {
 			System.out.format("%-30s%-30s%-30s%-30s%-30s\n", row);
 		}
 	}
 	else if (num_columns == 6){
+		for( int i = 0; i < num_columns; i++)
+			System.out.print("..............................");
+		System.out.println();
 		for (Object[] row : results) {
 			System.out.format("%-30s%-30s%-30s%-30s%-30s%-30s\n", row);
 		}
 	}
 	else if (num_columns == 7){
+		for( int i = 0; i < num_columns; i++)
+			System.out.print("..............................");
+		System.out.println();
 		for (Object[] row : results) {
 			System.out.format("%-30s%-30s%-30s%-30s%-30s%-30s%-30s\n", row);
 		}
 	}
+	System.out.print("\n");
 }//end executeQuery
 
 /**
