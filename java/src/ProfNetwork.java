@@ -382,7 +382,42 @@ public class ProfNetwork {
   }
   
   public static void UpdateProfile(ProfNetwork esql){
-    return;
+   // Change Password
+    /*System.out.print("\tWould you like to change your password: ");
+    String input = in.readLine();
+    if(input == "Yes" ^ input == "yes" ^ input == "y" ^ input == "Y")
+    {
+      System.out.print("\tEnter your login: ");
+      String login = in.readLine();
+      System.out.print("\tEnter your password: ");
+      String password = in.readLine();
+      
+      string query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, password);
+      int userNum = esql.executeQuery(query);
+      if(userNum > 0)
+      {
+        System.out.print("\tEnter your new password: ");
+        password = in.readLine();
+        System.out.print("\tEnter your new password again: ");
+        string password2 = in.readLine();
+        
+        if(password == password2)
+        {
+          query = String.format("UPDATE USR SET password = '%s' WHERE );
+          userNum = esql.executeQuery(query);
+          System.out.print("\tPassword has been changed!\n");
+          
+        }
+        else
+        {
+          System.out.print("\tPassword do not match!\n");
+        }
+        
+      }
+      else
+        
+    }
+    return;*/
   }
   
   public static void FriendList(ProfNetwork esql){

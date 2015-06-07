@@ -42,6 +42,6 @@ COPY MESSAGE(
         sendTime,
         deleteStatus,
         status)
-FROM '/home/csmajs/jdo007/CS166_Project/data/MESSAGE'
-WITH DELIMITER ';';
+FROM '/home/csmajs/jdo007/CS166_Project/data/MESSAGES'
+WITH DELIMITER '}';
 
