@@ -547,6 +547,7 @@ public static String LogIn(ProfNetwork esql){
     return;
   }
   
+  //View and delete messages
   public static void ViewMessages(ProfNetwork esql){
 	 // delete status
 	  // 0 - both did not delete
@@ -601,6 +602,7 @@ public static String LogIn(ProfNetwork esql){
       }
   }
   
+  //Search people by Full Name
   public static void SearchPeople(ProfNetwork esql){
 	  try{  
 		  System.out.print("\tEnter Full Name: ");
