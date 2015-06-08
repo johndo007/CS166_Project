@@ -85,50 +85,49 @@ public void executeUpdate (String sql) throws SQLException {
 }//end executeUpdate
 
 public static void PrintMessages(String[][] results) {
-	if (results.length <= 0) {
-		System.out.println("No messages to be read \n");
-		return;
-	}
 	System.out.println();
 	
 	for (int i = 0; i < results.length; i++)
 	{
-		for (int j = 0; j < 7; j++)
+		if (results[i] != null)
 		{
-			if (j == 0)
+			for (int j = 0; j < 7; j++)
 			{
-				System.out.println("MsgID: " + results[i][j]);
+				if (j == 0)
+				{
+					System.out.println("MsgID: " + results[i][j]);
+				}
+				else if (j == 1)
+				{
+					System.out.println("Sent By: " + results[i][j]);
+				}
+				else if (j == 2)
+				{
+					System.out.println("To: " + results[i][j]);
+				}
+				else if (j == 3) //LONG
+				{
+					System.out.println("Contents: " + results[i][j]);
+				}
+				else if (j == 4)
+				{
+					System.out.println("Send Time: " + results[i][j]);
+				}
+				else if (j == 5)
+				{
+					System.out.println("deleteStatus: " + results[i][j]);
+				}
+				else if (j == 6)
+				{
+					System.out.println("Status: " + results[i][j]);
+				}
 			}
-			else if (j == 1)
+			for (int spacing = 0; spacing < 50; spacing++)
 			{
-				System.out.println("Sent By: " + results[i][j]);
+				System.out.print("-");
 			}
-			else if (j == 2)
-			{
-				System.out.println("To: " + results[i][j]);
-			}
-			else if (j == 3) //LONG
-			{
-				System.out.println("Contents: " + results[i][j]);
-			}
-			else if (j == 4)
-			{
-				System.out.println("Send Time: " + results[i][j]);
-			}
-			else if (j == 5)
-			{
-				System.out.println("deleteStatus: " + results[i][j]);
-			}
-			else if (j == 6)
-			{
-				System.out.println("Status: " + results[i][j]);
-			}
+			System.out.println();
 		}
-		for (int spacing = 0; spacing < 50; spacing++)
-		{
-			System.out.print("-");
-		}
-		System.out.println();
 	}
 	System.out.println();
 }
@@ -353,6 +352,7 @@ public static void main (String[] args) {
 		System.out.println("4. Send Friend Request");
 		System.out.println("5. Search People");
 		System.out.println("6. View Messages");
+		System.out.println("7. View Friends");
 		System.out.println(".........................");
 		System.out.println("9. Log out");
 		switch (readChoice()){
@@ -362,6 +362,7 @@ public static void main (String[] args) {
 		   case 4: SendRequest(esql); break;
 		   case 5: SearchPeople(esql); break;
 		   case 6: ViewMessages(esql); break;
+		   case 7: FriendList(esql); break;
 		   case 9: usermenu = false; break;
 		   default : System.out.println("Unrecognized choice!"); break;
 		}
@@ -472,7 +473,7 @@ public static String LogIn(ProfNetwork esql){
   }
   
   public static void UpdateProfile(ProfNetwork esql){
-    try{
+	try{
         // Change Password
         String login = "";
         String original_password = "";
@@ -543,7 +544,10 @@ public static String LogIn(ProfNetwork esql){
 	System.out.print("\n\tReturning to Main Menu\n\n");
   }
   
+  //view friends, go to their profile, view their friends, send connetion request to friend's friends
   public static void FriendList(ProfNetwork esql){
+	  
+	  
     return;
   }
   
@@ -564,15 +568,34 @@ public static String LogIn(ProfNetwork esql){
 			
 			for (int i = 0; i < messages.length; i++)
 			{	
-				query = String.format("SELECT name FROM USR WHERE userID = '%s'", messages[i][1]);
-				String[][] senderName = esql.executeQueryAndReturnResult(query);
-				messages[i][1] = senderName[0][0]; // Replace SenderID with sender's name
+				if (messages[i][1].equals(currentUserID) && messages[i][5].equals("1")) //if currentUser is the sender, remove this message with delete status == 1
+				{
+					messages[i] = null;
+				}
+				else
+				{
+					query = String.format("SELECT name FROM USR WHERE userID = '%s'", messages[i][1]);
+					String[][] senderName = esql.executeQueryAndReturnResult(query);
+					messages[i][1] = senderName[0][0]; // Replace SenderID with sender's name
 
-				query = String.format("SELECT name FROM USR WHERE userID = '%s'", messages[i][2]);
-				String[][] receiverName = esql.executeQueryAndReturnResult(query);
-				messages[i][2] = receiverName[0][0]; //Overwrite ReceiverID with receiver's name
+					query = String.format("SELECT name FROM USR WHERE userID = '%s'", messages[i][2]);
+					String[][] receiverName = esql.executeQueryAndReturnResult(query);
+					messages[i][2] = receiverName[0][0]; //Overwrite ReceiverID with receiver's name
+				}
 			}
+			
 			PrintMessages(messages);
+			boolean hasMessage = false;
+			for(int i = 0; i < messages.length; i++)
+			{
+				if (messages[i] != null)
+					hasMessage = true;
+			}
+			if (!hasMessage) 
+			{
+				System.out.println("No messages to be read \n");
+				return;
+			}
 			
 			//Delete Messages	
 			System.out.print("\tWould you like to delete a message: ");
