@@ -29,7 +29,8 @@ import java.util.ArrayList;
  *
  */
 public class ProfNetwork {
-
+	
+	public static String currentUserID = "";
    // reference to physical database connection.
    private Connection _connection = null;
 
@@ -82,6 +83,55 @@ public void executeUpdate (String sql) throws SQLException {
   // close the instruction
   stmt.close ();
 }//end executeUpdate
+
+public static void PrintMessages(String[][] results) {
+	if (results.length <= 0) {
+		System.out.println("No messages to be read \n");
+		return;
+	}
+	System.out.println();
+	
+	for (int i = 0; i < results.length; i++)
+	{
+		for (int j = 0; j < 7; j++)
+		{
+			if (j == 0)
+			{
+				System.out.println("MsgID: " + results[i][j]);
+			}
+			else if (j == 1)
+			{
+				System.out.println("Sent By: " + results[i][j]);
+			}
+			else if (j == 2)
+			{
+				System.out.println("To: " + results[i][j]);
+			}
+			else if (j == 3) //LONG
+			{
+				System.out.println("Contents: " + results[i][j]);
+			}
+			else if (j == 4)
+			{
+				System.out.println("Send Time: " + results[i][j]);
+			}
+			else if (j == 5)
+			{
+				System.out.println("deleteStatus: " + results[i][j]);
+			}
+			else if (j == 6)
+			{
+				System.out.println("Status: " + results[i][j]);
+			}
+		}
+		for (int spacing = 0; spacing < 50; spacing++)
+		{
+			System.out.print("-");
+		}
+		System.out.println();
+	}
+	System.out.println();
+}
 
 /**
  Prints results of Query from array
@@ -302,6 +352,7 @@ public static void main (String[] args) {
 		System.out.println("3. Write a new message");
 		System.out.println("4. Send Friend Request");
 		System.out.println("5. Search People");
+		System.out.println("6. View Messages");
 		System.out.println(".........................");
 		System.out.println("9. Log out");
 		switch (readChoice()){
@@ -310,6 +361,7 @@ public static void main (String[] args) {
 		   case 3: NewMessage(esql); break;
 		   case 4: SendRequest(esql); break;
 		   case 5: SearchPeople(esql); break;
+		   case 6: ViewMessages(esql); break;
 		   case 9: usermenu = false; break;
 		   default : System.out.println("Unrecognized choice!"); break;
 		}
@@ -395,8 +447,10 @@ public static String LogIn(ProfNetwork esql){
 
          String query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, password);
          int userNum = esql.executeQuery(query);
-		if (userNum > 0)
+		if (userNum > 0){
+			ProfNetwork.currentUserID = login;
 			return login;
+		}
 		else
 			System.err.println("Incorrect Username or Password. Please try again. \n");
 	}
@@ -418,46 +472,133 @@ public static String LogIn(ProfNetwork esql){
   }
   
   public static void UpdateProfile(ProfNetwork esql){
-  // Change Password
-    /*System.out.print("\tWould you like to change your password: ");
-    String input = in.readLine();
-    if(input == "Yes" ^ input == "yes" ^ input == "y" ^ input == "Y")
-    {
-      System.out.print("\tEnter your login: ");
-      String login = in.readLine();
-      System.out.print("\tEnter your password: ");
-      String password = in.readLine();
-      
-      string query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, password);
-      int userNum = esql.executeQuery(query);
-      if(userNum > 0)
-      {
-        System.out.print("\tEnter your new password: ");
-        password = in.readLine();
-        System.out.print("\tEnter your new password again: ");
-        string password2 = in.readLine();
-        
-        if(password == password2)
+    try{
+        // Change Password
+        String login = "";
+        String original_password = "";
+        String password = "";
+        String password2 = "";
+
+        System.out.print("\tWould you like to change your password: ");
+        String input = in.readLine();
+        if(input.equals("Yes") || input.equals("yes") || input.equals("Y") || input.equals("y"))
         {
-          query = String.format("UPDATE USR SET password = '%s' WHERE );
-          userNum = esql.executeQuery(query);
-          System.out.print("\tPassword has been changed!\n");
+          System.out.print("\n\tPlease verify that you are the owner of this account\n");
+          System.out.print("\tEnter your username: ");
+          login = in.readLine();
+          System.out.print("\tEnter your password: ");
+          password = in.readLine();
           
+          String query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, password);
+          int userNum = esql.executeQuery(query);
+          if(userNum > 0)
+          {
+            System.out.print("\n\tVerification Successful!\n\n");
+            original_password = password;
+            while(password != password2)
+            {
+              System.out.print("\tEnter your new password: ");
+              password = in.readLine();
+              System.out.print("\tEnter your new password again: ");
+              password2 = in.readLine();
+              
+              password = password.trim();
+              password2 = password2.trim();
+
+              if(password.equals("") && password2.equals(""))
+              {
+                System.out.print("\tNo changes made to password!\n");
+                System.out.print("\n\tReturning to Main Menu\n\n");
+                return;
+              }
+              else if(password.equals(password2))
+              {
+                query = String.format("UPDATE USR SET password = '%s' WHERE userId = '%s' AND password = '%s'", password, login, original_password);
+                esql.executeUpdate(query);
+                if(userNum > 0)
+                {
+                  System.out.print("\tPassword has been changed!\n");
+                }
+                else
+                {
+                  System.out.print("\tPassword was not succesfully saved!\n");
+                  return;
+                }
+              }
+              else
+              {
+                System.out.print("\tPassword do not match!\n");
+              }
+            }
+          }
+          else
+          System.out.print("\n\tLogin was unsuccessful!\n\n\tReturning to Main Menu\n\n");
+          return;
         }
-        else
-        {
-          System.out.print("\tPassword do not match!\n");
-        }
-        
-      }
-      else
-        
+      
+	  }catch(Exception e){
+         //System.err.println (e.getMessage ());
+         return;
     }
-    return;*/
+	System.out.print("\n\tReturning to Main Menu\n\n");
   }
   
   public static void FriendList(ProfNetwork esql){
     return;
+  }
+  
+  public static void ViewMessages(ProfNetwork esql){
+	 // delete status
+	  // 0 - both did not delete
+	  // 1 - sender deleted message
+	  // 2 - receiver deleted message
+	  // 3 - both deleted the message
+	  
+	  try{
+			//get messages sent to me/by me
+			//delivered/read where delete status = 0/1
+			String query = String.format("SELECT * FROM MESSAGE WHERE (receiverID = '%s' OR senderID = '%s') AND (deleteStatus = '%s' OR deleteStatus = '%s') AND (status = '%s' OR status = '%s')", 
+								  currentUserID, currentUserID, '0', '1',"Read", "Delivered");
+			String[][] messages = esql.executeQueryAndReturnResult(query);
+			
+			for (int i = 0; i < messages.length; i++)
+			{	
+				query = String.format("SELECT name FROM USR WHERE userID = '%s'", messages[i][1]);
+				String[][] senderName = esql.executeQueryAndReturnResult(query);
+				messages[i][1] = senderName[0][0]; // Replace SenderID with sender's name
+
+				query = String.format("SELECT name FROM USR WHERE userID = '%s'", messages[i][2]);
+				String[][] receiverName = esql.executeQueryAndReturnResult(query);
+				messages[i][2] = receiverName[0][0]; //Overwrite ReceiverID with receiver's name
+			}
+			PrintMessages(messages);
+			
+			//Delete Messages	
+			System.out.print("\tWould you like to delete a message: ");
+			String input = in.readLine();
+			if(input.equals("Yes") || input.equals("yes") || input.equals("Y") || input.equals("y"))
+			{
+				System.out.print("\tEnter MsgID: ");
+				String msgID = in.readLine();
+				query = String.format("SELECT senderId, receiverId FROM MESSAGE WHERE msgId = '%s'", msgID);
+				String[][] send_rcv = esql.executeQueryAndReturnResult(query);
+				if (send_rcv[0][0].equals(currentUserID))  //currentUser is a sender
+				{
+					query = String.format("UPDATE MESSAGE SET deleteStatus = '%s' WHERE msgId = '%s'",'1', msgID);
+					esql.executeUpdate(query);	
+				}
+				else if (send_rcv[0][1].equals(currentUserID))  //currentUser is a receiver
+				{
+					query = String.format("UPDATE MESSAGE SET deleteStatus = '%s' WHERE msgId = '%s'",'2', msgID);
+					esql.executeUpdate(query);	
+				}
+				System.out.println("Message was successfully deleted.");
+			}
+	  }
+	  catch(Exception e){
+         System.err.println (e.getMessage ());
+         return;
+      }
   }
   
   public static void SearchPeople(ProfNetwork esql){
