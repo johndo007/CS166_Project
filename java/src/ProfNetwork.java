@@ -22,7 +22,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
-//import java.lang.Integer;
+import java.util.Date;
+import java.sql.Timestamp;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -86,8 +87,6 @@ public void executeUpdate (String sql) throws SQLException {
   stmt.close ();
 }//end executeUpdate
 
-
-
 public static void PrintMessages(String[][] results) {
 	System.out.println();
 	
@@ -135,6 +134,80 @@ public static void PrintMessages(String[][] results) {
 	}
 	System.out.println();
 }
+
+public static void PrintWorkDetails(String[][] results) {
+	System.out.println();
+	
+	for (int i = 0; i < results.length; i++)
+	{
+		if (results[i] != null)
+		{
+			for (int j = 0; j < 5; j++)
+			{
+				if (j == 0)
+				{
+					System.out.println("Company: " + results[i][j]);
+				}
+				else if (j == 1)
+				{
+					System.out.println("Role: " + results[i][j]);
+				}
+				else if (j == 2)
+				{
+					System.out.println("Location: " + results[i][j]);
+				}
+				else if (j == 3) //LONG
+				{
+					System.out.println("startDate: " + results[i][j]);
+				}
+				else if (j == 4)
+				{
+					System.out.println("endDate: " + results[i][j]);
+				}
+			}
+			System.out.println();
+		}
+	}
+	System.out.println();
+}
+
+
+public static void PrintEduDetails(String[][] results) {
+	System.out.println();
+	
+	for (int i = 0; i < results.length; i++)
+	{
+		if (results[i] != null)
+		{
+			for (int j = 0; j < 5; j++)
+			{
+				if (j == 0)
+				{
+					System.out.println("Institution Name: " + results[i][j]);
+				}
+				else if (j == 1)
+				{
+					System.out.println("Major: " + results[i][j]);
+				}
+				else if (j == 2)
+				{
+					System.out.println("Degree: " + results[i][j]);
+				}
+				else if (j == 3) //LONG
+				{
+					System.out.println("startDate: " + results[i][j]);
+				}
+				else if (j == 4)
+				{
+					System.out.println("endDate: " + results[i][j]);
+				}
+			}
+			System.out.println();
+		}
+	}
+	System.out.println();
+}
+
 
 /**
  Prints results of Query from array
@@ -353,7 +426,7 @@ public static void main (String[] args) {
 	if (authorisedUser != null) {
 	  boolean usermenu = true;
 	  while(usermenu) {
-		System.out.println("\nMAIN MENU");
+		System.out.println("MAIN MENU");
 		System.out.println("---------");
 		System.out.println("1. Goto Friend List");
 		System.out.println("2. Update Profile");
@@ -459,16 +532,15 @@ public static String LogIn(ProfNetwork esql){
          int userNum = esql.executeQuery(query);
 
 		if (userNum > 0)
-    {
-      currentUserID = login;
-      currentUserNumber = userNum;
-			ProfNetwork.currentUserID = login;
-			return login;
-    }
+		{
+		  currentUserID = login;
+		  currentUserNumber = userNum;
+				return login;
+		}
 		else
 		{
-      System.err.println("Incorrect Username or Password. Please try again. \n");
-    }
+			System.err.println("Incorrect Username or Password. Please try again. \n");
+		}
 	}
 	catch(Exception e){
 		System.err.println (e.getMessage ());
@@ -488,7 +560,7 @@ public static String LogIn(ProfNetwork esql){
         String messageTarget; 
         String messageToBeSent;
         int maxMessageID = 0;
-        String messageStatus = "Sent";
+        String messageStatus = "Delivered";
         //Timestamp currentTime = 
         System.out.print("\tEnter the login of the person you want to message: ");
         messageTarget = in.readLine();     
@@ -501,12 +573,7 @@ public static String LogIn(ProfNetwork esql){
           query = String.format("SELECT COUNT( * ) FROM MESSAGE");
           String[][] g = esql.executeQueryAndReturnResult(query);
           maxMessageID = Integer.parseInt(g[0][0]) + 1;
-          
-          /*
-           * Get Time Stamp
-           */
-          
-          //query = String.format("INSERT INTO MESSAGE VALUES ('%d', '%s', '%s', '%s', 0, 0, '%s')", maxMessageID, currentUserID, messageTarget, messageToBeSent, messageStatus); 
+          query = String.format("INSERT INTO MESSAGE VALUES ('%d', '%s', '%s', '%s', current_timestamp, 0, '%s')", maxMessageID, currentUserID, messageTarget, messageToBeSent, messageStatus); 
           esql.executeUpdate(query);
           
           System.out.print("\tMessage has been sent!\n\n");
@@ -604,9 +671,148 @@ public static String LogIn(ProfNetwork esql){
     return;
   }
   
-  //view friends, go to their profile, view their friends, send connetion request to friend's friends
-  public static void FriendList(ProfNetwork esql){  
-    return;
+  //view friends, go to their profile, view their friends, send connection request to friend's friends
+  public static void FriendList(ProfNetwork esql){
+	int depth = 0; //if depth < 3, this is a 3rd lvl connection
+	String UserID = currentUserID;
+	String[][] myFriends = new String[10][3]; //allocate slots for 10 for now
+	try{
+		while(true)
+		{
+			//System.out.println("Depth: " + depth);
+			String query = String.format("SELECT * FROM CONNECTION_USR WHERE (connectionId = '%s' OR UserId = '%s') AND status = '%s'", 
+									UserID, UserID, "Accept");
+			String[][] friend_list = esql.executeQueryAndReturnResult(query);
+			if (friend_list.length <= 0)
+			{
+				System.out.println("The user has no friends!");
+				return;
+			}
+			if (depth == 0)
+			{
+				//System.out.println("copying friend list");
+				myFriends = friend_list.clone();
+			}
+				
+			System.out.println("-------------------- Friends -------------------- ");
+			//convert friend_list to their real names
+			for (int i = 0; i < friend_list.length; i++)
+			{
+				if (friend_list[i][0].equals(UserID))
+				{
+					query = String.format("SELECT name FROM USR WHERE userId = '%s'", friend_list[i][1]);
+				}
+				else
+				{
+					query = String.format("SELECT name FROM USR WHERE userId = '%s'", friend_list[i][0]);
+				}	
+					String[][] friendName = esql.executeQueryAndReturnResult(query);
+					System.out.println(i + ". " + friendName[0][0]);	
+			}
+			
+			System.out.print("Which friend's profile to you want to view(#), X to cancel: ");
+			String friend_num = in.readLine();
+			if (friend_num.equals("X")) 
+				return;
+			int index = Integer.parseInt(friend_num);
+			String friendID = "";
+			if (friend_list[index][0].equals(UserID))
+			{
+				friendID = friend_list[index][1]; //got the ID of friend
+			}
+			else 
+			{
+				friendID = friend_list[index][0]; //got the ID of friend
+			}
+			
+			//Outputting profile information
+			query = String.format("SELECT name FROM USR WHERE userId = '%s'", friendID);
+			String[][] friendName = esql.executeQueryAndReturnResult(query);
+			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ " + friendName[0][0] + "'s profile page ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
+			query = String.format("SELECT company, role, location, startDate, endDate FROM WORK_EXPR WHERE userId = '%s'", friendID);
+			String[][] WorkDetails = esql.executeQueryAndReturnResult(query);
+			System.out.println("-------------------- Work Experience -------------------- ");
+			PrintWorkDetails(WorkDetails); 
+			query = String.format("SELECT instituitionName, major, degree, startdate, enddate FROM EDUCATIONAL_DETAILS WHERE userId = '%s'",
+								friendID);
+			String[][] EduDetails = esql.executeQueryAndReturnResult(query);
+			System.out.println("-------------------- Educational Details -------------------- ");
+			PrintEduDetails(EduDetails);
+			System.out.println();
+			
+			System.out.println("Would you like to message this person: ");
+			String choice = in.readLine();
+			if(choice.equals("Yes") || choice.equals("yes") || choice.equals("Y") || choice.equals("y"))
+			{
+				System.out.print("\n\tMessage: ");
+			    String messageToBeSent = in.readLine();
+			    query = String.format("SELECT COUNT( * ) FROM MESSAGE");
+			    String[][] g = esql.executeQueryAndReturnResult(query);
+			    int maxMessageID = Integer.parseInt(g[0][0]) + 1;
+			    String messageStatus = "Delivered";
+			    query = String.format("INSERT INTO MESSAGE VALUES ('%d', '%s', '%s', '%s', current_timestamp, 0, '%s')", maxMessageID, currentUserID, friendID, messageToBeSent, messageStatus); 
+			    esql.executeUpdate(query);
+			    
+			    System.out.print("\tMessage has been sent!\n\n");
+			}
+			if (depth > 0 && depth < 3) //2nd and 3rd lvl connections only for connection requests
+			{
+				  //System.out.println("CHECK friend's list: \n");
+				  boolean already_friend = false;
+				  
+				  for(int i = 0; i < myFriends.length; i++) //check if already existing friend
+				  {
+					  if (myFriends == null)
+						break;
+					  if (myFriends[i][0].equals(currentUserID))
+					  {
+							//System.out.println(myFriends[i][1]);
+							if(myFriends[i][1].equals(friendID)){
+								already_friend = true;
+								break;
+							}	
+					  }
+					  else
+					  {
+							//System.out.println(myFriends[i][0]);
+							if(myFriends[i][0].equals(friendID)){
+								already_friend = true;
+								break;
+							}
+					  } 
+				  }
+				  if(friendID.equals(currentUserID)) //Don't want to add myself
+						already_friend = true;
+				  if(!already_friend) //only ask to connect if not already a friend
+				  {
+					  //CHECK IF ALREADY SENT A REQUEST
+					  query = String.format("SELECT * FROM CONNECTION_USR WHERE UserId = '%s' AND connectionId = '%s'", currentUserID, friendID);
+					  int check = esql.executeQuery(query);
+					  if (check <= 0) //never sent the request
+					  {
+						   System.out.println("Would you like to connect with this person: ");
+						  String input = in.readLine();
+						  if(input.equals("Yes") || input.equals("yes") || input.equals("Y") || input.equals("y"))
+						  {
+								 query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s','%s','%s')", currentUserID, friendID, "Request");
+								 esql.executeUpdate(query);
+								 System.out.println("Connection request sent!\n");
+						  }
+					  }
+				  }
+				  else{
+					  depth = depth -1; //ventured into a 1st level friend, so depth nullified
+				  }
+			}
+			depth = depth + 1;
+			//System.out.println("explored " + UserID + "'s friend list");
+			//System.out.println("friendID: " + friendID);
+			UserID = friendID; //Setting up next iteration
+		}
+	}
+	catch(Exception e){
+         System.err.println (e.getMessage());
+      } 
   }
   
   //Accept or Reject connection requests
@@ -661,6 +867,7 @@ public static String LogIn(ProfNetwork esql){
          return;
       } 
   }
+  
   
   //View and delete messages
   public static void ViewMessages(ProfNetwork esql){
